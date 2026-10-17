@@ -10,6 +10,39 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Portada y cartelera */
+  --font-marquee: var(--font-marquee-src);
+  --font-texto: var(--font-texto-src);
+}
+
+@theme {
+  /* Paleta de sala de cine */
+  --color-sala: #1d0a11;     /* fondo: la sala a oscuras */
+  --color-butaca: #4b0f1f;   /* terciopelo de las butacas */
+  --color-telon: #7a1a2e;    /* telón */
+  --color-foco: #f5b83d;     /* focos de la marquesina */
+  --color-pantalla: #f6eee4; /* luz de la pantalla: texto principal */
+  --color-rosa: #c9a1ab;     /* texto secundario */
+
+  /* Único momento animado: los focos se encienden al cargar */
+  --animate-encender: encender 1.6s ease-out both;
+  /* Respuesta a una acción: abrir la ficha */
+  --animate-aparecer: aparecer 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes encender {
+    0% { opacity: 0.1; }
+    15% { opacity: 1; }
+    25% { opacity: 0.25; }
+    40% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +56,32 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Detalles del navegador con la paleta de la sala (solo portada y cartelera) */
+html:has(.cartelera) {
+  background: var(--color-sala);
+  color-scheme: dark;
+  scrollbar-color: var(--color-telon) var(--color-sala);
+}
+
+.cartelera ::selection {
+  background: var(--color-foco);
+  color: var(--color-sala);
+}
+
+.cartelera input,
+.cartelera select {
+  caret-color: var(--color-foco);
+  accent-color: var(--color-foco);
+}
+
+.cartelera select option {
+  background: var(--color-sala);
+  color: var(--color-pantalla);
+}
+
+.cartelera a:focus-visible,
+.cartelera button:focus-visible {
+  outline-color: var(--color-foco);
 }
