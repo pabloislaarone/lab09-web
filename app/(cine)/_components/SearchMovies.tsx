@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Search } from 'lucide-react'
-import MovieModal from './MovieModal'
-import Poster from './Poster'
+import { useAbrirFicha } from './FichaProvider'
+import PosterCard from './PosterCard'
 import {
   API_KEY,
   OMDB_URL,
@@ -12,7 +12,6 @@ import {
   MovieSummary,
   SearchResponse,
   translateError,
-  typeLabel,
 } from '../_lib/omdb'
 
 type Mode = 'nombre' | 'titulo'
@@ -32,8 +31,8 @@ export default function SearchMovies() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
 
-  // Película abierta en el modal
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Abre la ficha en el modal compartido de la página
+  const abrirFicha = useAbrirFicha()
 
   const minLength = mode === 'nombre' ? 3 : 2
   const isSearching = query.trim().length >= minLength
@@ -123,16 +122,13 @@ export default function SearchMovies() {
   return (
     <>
       {/* Letrero de cine con focos */}
-      <div className="relative rounded-[28px] p-5 shadow-[0_30px_80px_-30px_rgba(245,184,61,0.5)]">
+      <div id="buscar" className="relative scroll-mt-6 rounded-[28px] p-5 shadow-[0_30px_80px_-30px_rgba(245,184,61,0.5)]">
         {/* Fila de focos alrededor del letrero */}
-        <div
-          aria-hidden
-          className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle,var(--color-foco)_3px,rgba(245,184,61,0.25)_4px,transparent_6px)] bg-[length:20px_20px] bg-repeat-space motion-safe:animate-encender"
-        />
+        <div aria-hidden className="focos" />
         <div className="relative rounded-2xl border-2 border-foco/60 bg-butaca px-5 py-8 sm:px-10 sm:py-10">
-          <h1 className="text-center font-marquee text-6xl font-black leading-none tracking-wide text-foco drop-shadow-[0_0_18px_rgba(245,184,61,0.55)] sm:text-8xl">
-            CARTELERA
-          </h1>
+          <h2 className="text-center font-marquee text-5xl font-black leading-none text-foco drop-shadow-[0_0_18px_rgba(245,184,61,0.45)] sm:text-7xl">
+            ¿Qué quieres ver?
+          </h2>
           <p className="mx-auto mt-3 max-w-md text-center text-rosa">
             Busca cualquier película o serie y mira su ficha completa.
           </p>
@@ -141,12 +137,19 @@ export default function SearchMovies() {
           <div
             role="radiogroup"
             aria-label="Modo de búsqueda"
-            className="mx-auto mt-8 flex w-fit max-w-full rounded-full border border-foco/30 bg-sala/60 p-1 text-sm"
+            className="relative mx-auto mt-8 grid w-fit max-w-full grid-cols-2 rounded-full border border-foco/30 bg-sala/60 p-1 text-sm"
           >
+            {/* Píldora que se desliza hacia el modo elegido */}
+            <span
+              aria-hidden
+              className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-foco transition-transform duration-300 ease-[cubic-bezier(0.77,0,0.175,1)] ${
+                mode === 'titulo' ? 'translate-x-full' : 'translate-x-0'
+              }`}
+            />
             {(
               [
                 ['nombre', 'Por nombre'],
-                ['titulo', 'Título exacto y año'],
+                ['titulo', 'Título y año'],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -154,8 +157,8 @@ export default function SearchMovies() {
                 role="radio"
                 aria-checked={mode === value}
                 onClick={() => setMode(value)}
-                className={`cursor-pointer whitespace-nowrap rounded-full px-3 py-2 font-semibold sm:px-4 transition focus-visible:outline-2 focus-visible:outline-foco ${
-                  mode === value ? 'bg-foco text-sala' : 'text-rosa hover:text-pantalla'
+                className={`relative z-10 cursor-pointer whitespace-nowrap rounded-full px-3 py-2 text-center font-semibold transition-colors duration-200 sm:px-4 focus-visible:outline-2 focus-visible:outline-foco ${
+                  mode === value ? 'text-sala' : 'text-rosa hover:text-pantalla'
                 }`}
               >
                 {label}
@@ -219,38 +222,39 @@ export default function SearchMovies() {
         {isSearching && loading && (
           <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <li key={i} className="aspect-[2/3] animate-pulse rounded-md bg-butaca/70" />
+              <li key={i}>
+                <div className="esqueleto aspect-[2/3] rounded-md animate-brillo" style={{ animationDelay: `${i * 120}ms` }} />
+                <div className="esqueleto mt-3 h-5 w-3/4 rounded animate-brillo" />
+              </li>
             ))}
           </ul>
         )}
 
         {isSearching && !loading && error && (
-          <p className="mx-auto max-w-lg rounded-xl border border-foco/25 bg-butaca/50 p-5 text-center text-pantalla/90">
+          <p className="mx-auto max-w-lg rounded-xl border border-foco/25 bg-butaca/50 p-5 text-center text-pantalla/90 motion-safe:animate-aparecer">
             {error}
           </p>
         )}
 
         {isSearching && !loading && !error && results.length > 0 && (
           <>
-            <p className="mb-5 text-sm text-rosa">
+            <p className="mb-5 text-sm text-rosa motion-safe:animate-desvanecer">
               {total === 1 ? '1 resultado' : `${total.toLocaleString('es-PE')} resultados`} para “{query.trim()}”
             </p>
             <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-              {results.map((movie) => (
-                <li key={movie.imdbID}>
+              {results.map((movie, i) => (
+                <li
+                  key={movie.imdbID}
+                  className="motion-safe:animate-aparecer"
+                  // Cascada: cada póster entra un poco después del anterior (los de "cargar más" sin retraso extra)
+                  style={{ animationDelay: `${(i % 10) * 45}ms` }}
+                >
                   <button
-                    onClick={() => setSelectedId(movie.imdbID)}
-                    className="group block w-full cursor-pointer text-left focus-visible:outline-none"
+                    type="button"
+                    onClick={() => abrirFicha(movie.imdbID)}
+                    className="tarjeta-poster block w-full cursor-pointer text-left focus-visible:outline-none"
                   >
-                    <div className="overflow-hidden rounded-md ring-2 ring-transparent transition group-hover:ring-foco group-focus-visible:ring-foco">
-                      <Poster src={movie.Poster} title={movie.Title} />
-                    </div>
-                    <h3 className="mt-3 font-marquee text-xl font-extrabold leading-tight text-pantalla group-hover:text-foco">
-                      {movie.Title}
-                    </h3>
-                    <p className="mt-1 text-sm text-rosa">
-                      {movie.Year} <span className="text-rosa/80">{typeLabel(movie.Type)}</span>
-                    </p>
+                    <PosterCard title={movie.Title} year={movie.Year} type={movie.Type} poster={movie.Poster} />
                   </button>
                 </li>
               ))}
@@ -261,7 +265,7 @@ export default function SearchMovies() {
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="cursor-pointer rounded-full border border-foco/50 px-6 py-3 font-semibold text-foco transition hover:bg-foco hover:text-sala disabled:cursor-wait disabled:opacity-60"
+                  className="boton-cine cursor-pointer rounded-full border border-foco/50 px-6 py-3 font-semibold text-foco hover:bg-foco hover:text-sala disabled:cursor-wait disabled:opacity-60"
                 >
                   {loadingMore ? 'Cargando…' : `Cargar más resultados (${results.length} de ${total})`}
                 </button>
@@ -270,9 +274,6 @@ export default function SearchMovies() {
           </>
         )}
       </section>
-
-      {/* Detalle en la misma página, dentro de un modal */}
-      {selectedId && <MovieModal imdbID={selectedId} onClose={() => setSelectedId(null)} />}
     </>
   )
 }

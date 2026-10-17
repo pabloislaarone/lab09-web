@@ -51,6 +51,10 @@ export interface MovieDetail {
 // Si OMDb no tiene póster devuelve "N/A"
 export const hasPoster = (poster?: string) => !!poster && poster !== 'N/A'
 
+// OMDb entrega pósters pequeños (300 px); Amazon permite pedir uno más grande
+export const posterGrande = (poster: string, ancho = 800) =>
+  hasPoster(poster) ? poster.replace(/_SX\d+/, `_SX${ancho}`) : poster
+
 // Muestra un texto o un guion si OMDb devuelve "N/A"
 export const orDash = (value?: string) => (value && value !== 'N/A' ? value : '—')
 
