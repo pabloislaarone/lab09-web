@@ -1,8 +1,7 @@
 import { Suspense } from 'react'
-import Link from 'next/link'
 import { connection } from 'next/server'
 import axios from 'axios'
-import { ArrowLeft, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import SearchMovies from './_components/SearchMovies'
 import Poster from './_components/Poster'
 import { API_KEY, OMDB_URL, MovieDetail, orDash, typeLabel } from './_lib/omdb'
@@ -143,14 +142,6 @@ export default function CarteleraPage() {
       {/* Luz del proyector sobre el letrero */}
       <div className="bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(122,26,46,0.55),transparent)]">
         <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6">
-          <Link
-            href="/"
-            className="mb-6 inline-flex items-center gap-2 rounded text-sm text-rosa transition hover:text-pantalla focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foco"
-          >
-            <ArrowLeft aria-hidden className="h-4 w-4" />
-            Volver a la portada
-          </Link>
-
           {/* CSR: búsqueda interactiva */}
           <SearchMovies />
         </div>
