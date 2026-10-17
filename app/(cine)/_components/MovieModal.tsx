@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
-import { X } from 'lucide-react'
+import { Play, X } from 'lucide-react'
 import Poster from './Poster'
+import FavButton from './FavButton'
+import { useAbrirTrailer } from './FichaProvider'
+import { getTrailer } from '../_lib/trailers'
 import { API_KEY, OMDB_URL, MovieDetail, orDash, posterGrande, typeLabel } from '../_lib/omdb'
 
 interface Props {
@@ -26,6 +29,7 @@ export default function MovieModal({ imdbID, onClose }: Props) {
   const [error, setError] = useState('')
   const [cerrando, setCerrando] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const abrirTrailer = useAbrirTrailer()
 
   // Primero se anima la salida y luego se quita el modal
   const cerrar = useCallback(() => {
@@ -133,6 +137,21 @@ export default function MovieModal({ imdbID, onClose }: Props) {
                   <p className="mt-2 text-sm text-foco motion-safe:animate-subir" style={{ animationDelay: '100ms' }}>
                     {movie.Genre}
                   </p>
+
+                  <div className="mt-5 flex flex-wrap gap-2 motion-safe:animate-subir" style={{ animationDelay: '120ms' }}>
+                    <button
+                      type="button"
+                      onClick={() => abrirTrailer({ title: movie.Title, year: movie.Year, videoId: getTrailer(movie.imdbID) })}
+                      className="boton-cine inline-flex cursor-pointer items-center gap-2 rounded-full bg-foco px-5 py-2.5 text-sm font-semibold text-sala hover:bg-pantalla focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      <Play aria-hidden className="h-4 w-4 fill-current" />
+                      Ver tráiler
+                    </button>
+                    <FavButton
+                      variante="texto"
+                      titulo={{ imdbID: movie.imdbID, Title: movie.Title, Year: movie.Year, Type: movie.Type, Poster: movie.Poster }}
+                    />
+                  </div>
 
                   <p
                     className="mt-5 max-w-prose leading-relaxed text-pantalla/90 motion-safe:animate-subir"

@@ -35,6 +35,7 @@
   --animate-brillo: brillo 1.6s linear infinite;
   --animate-acercar: acercar 9s ease-out both;
   --animate-progreso: progreso linear both;
+  --animate-latido: latido 0.45s var(--ease-salida) both;
 
   @keyframes subir {
     from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
@@ -57,6 +58,12 @@
   @keyframes acercar {
     from { transform: scale(1.18); }
     to { transform: scale(1.05); }
+  }
+  /* Corazón de favoritos al guardarse */
+  @keyframes latido {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.35); }
+    100% { transform: scale(1); }
   }
   /* Barra que marca cuándo cambia la película destacada */
   @keyframes progreso {
@@ -81,6 +88,7 @@ body {
 /* Detalles del navegador con la paleta de la sala (solo portada y cartelera) */
 html:has(.cartelera) {
   background: var(--color-sala);
+  scroll-behavior: smooth;
   color-scheme: dark;
   scrollbar-color: var(--color-telon) var(--color-sala);
 }
@@ -149,20 +157,6 @@ html:has(.cartelera) {
   background-size: 200% 100%;
 }
 
-/* Aparición al hacer scroll (la activa el componente Reveal) */
-.revelar {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.6s var(--ease-salida),
-    transform 0.7s var(--ease-salida);
-  transition-delay: var(--retraso, 0ms);
-}
-.revelar[data-visible="true"] {
-  opacity: 1;
-  transform: none;
-}
-
 /* Tarjeta de póster: se eleva y el póster se acerca al pasar el mouse */
 .tarjeta-poster .poster-marco {
   transition:
@@ -180,8 +174,82 @@ html:has(.cartelera) {
   transform: scale(0.97);
   transition-duration: 0.12s;
 }
-.tarjeta-poster:focus-visible .poster-velo {
+.tarjeta-poster:focus-within .poster-velo {
   opacity: 1;
+}
+
+/* Corazón de favoritos sobre el póster */
+.poster-fav {
+  transition:
+    opacity 0.2s ease,
+    transform 0.16s var(--ease-salida),
+    background-color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-poster .poster-fav[aria-pressed="false"] {
+    opacity: 0;
+  }
+  .tarjeta-poster:hover .poster-fav,
+  .tarjeta-poster:focus-within .poster-fav {
+    opacity: 1;
+  }
+}
+
+/* Filas horizontales: sin barra de scroll visible */
+.fila-scroll {
+  scrollbar-width: none;
+}
+.fila-scroll::-webkit-scrollbar {
+  display: none;
+}
+.fila-scroll > li {
+  scroll-snap-align: start;
+}
+
+/* Enlaces del menú: línea que crece desde la izquierda */
+.enlace-nav {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.enlace-nav::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-foco);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-salida);
+}
+.enlace-nav:hover::after,
+.enlace-nav:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Tarjetas de tráiler: la miniatura se acerca y el botón de play crece */
+.tarjeta-trailer img {
+  transition: transform 0.6s var(--ease-salida);
+}
+.tarjeta-trailer .play {
+  transition:
+    transform 0.3s var(--ease-salida),
+    background-color 0.2s ease;
+}
+.tarjeta-trailer:active .marco-trailer {
+  transform: scale(0.98);
+}
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-trailer:hover img {
+    transform: scale(1.06);
+  }
+  .tarjeta-trailer:hover .play {
+    transform: scale(1.12);
+    background-color: var(--color-foco);
+    color: var(--color-sala);
+  }
 }
 @media (hover: hover) and (pointer: fine) {
   .tarjeta-poster:hover .poster-marco {
@@ -219,12 +287,13 @@ html:has(.cartelera) {
   .cartelera .barra-progreso {
     animation-duration: 8s !important;
   }
-  .revelar {
-    transform: none;
-    transition: opacity 0.2s ease;
+  html:has(.cartelera) {
+    scroll-behavior: auto;
   }
   .tarjeta-poster .poster-marco,
-  .tarjeta-poster .poster-marco img {
+  .tarjeta-poster .poster-marco img,
+  .tarjeta-trailer img,
+  .tarjeta-trailer .play {
     transform: none !important;
   }
 }

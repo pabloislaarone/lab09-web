@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Star, Ticket } from 'lucide-react'
-import { useAbrirFicha } from './FichaProvider'
+import { Play, Star, Ticket } from 'lucide-react'
+import { useAbrirFicha, useAbrirTrailer } from './FichaProvider'
+import FavButton from './FavButton'
 import Poster from './Poster'
+import { getTrailer } from '../_lib/trailers'
 import { MovieDetail, hasPoster, orDash, posterGrande, typeLabel } from '../_lib/omdb'
 
 interface Props {
@@ -19,6 +21,7 @@ export default function Hero({ destacadas }: Props) {
   const [actual, setActual] = useState(0)
   const [pausado, setPausado] = useState(false)
   const abrirFicha = useAbrirFicha()
+  const abrirTrailer = useAbrirTrailer()
 
   const pelicula = destacadas[actual]
   if (!pelicula) return null
@@ -33,7 +36,8 @@ export default function Hero({ destacadas }: Props) {
       onMouseLeave={() => setPausado(false)}
       onFocus={() => setPausado(true)}
       onBlur={() => setPausado(false)}
-      className="relative isolate flex min-h-[92svh] flex-col overflow-hidden"
+      id="inicio"
+      className="relative isolate flex min-h-[92svh] flex-col overflow-hidden pt-20"
     >
       {/* Fondos: el póster desenfocado de cada título, se cruzan al cambiar */}
       <div aria-hidden className="absolute inset-0 -z-10">
@@ -56,20 +60,6 @@ export default function Hero({ destacadas }: Props) {
         <div className="absolute inset-0 bg-gradient-to-r from-sala via-sala/85 to-sala/30" />
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-sala to-transparent" />
       </div>
-
-      {/* Barra superior */}
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 pt-6 sm:px-6">
-        <p className="font-marquee text-3xl font-black text-foco drop-shadow-[0_0_14px_rgba(245,184,61,0.55)] motion-safe:animate-desvanecer">
-          CARTELERA
-        </p>
-        <a
-          href="#buscar"
-          className="boton-cine inline-flex items-center gap-2 rounded-full border border-pantalla/25 px-4 py-2 text-sm font-semibold text-pantalla hover:border-foco hover:text-foco focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          <Search aria-hidden className="h-4 w-4" />
-          Buscar
-        </a>
-      </header>
 
       {/* Título destacado */}
       <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1fr_minmax(0,320px)]">
@@ -97,22 +87,27 @@ export default function Hero({ destacadas }: Props) {
           >
             {pelicula.Plot}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 motion-safe:animate-subir" style={{ animationDelay: '240ms' }}>
+          <div className="mt-8 flex flex-wrap items-center gap-3 motion-safe:animate-subir" style={{ animationDelay: '240ms' }}>
+            <button
+              type="button"
+              onClick={() => abrirTrailer({ title: pelicula.Title, year: pelicula.Year, videoId: getTrailer(pelicula.imdbID) })}
+              className="boton-cine inline-flex cursor-pointer items-center gap-2 rounded-full bg-foco px-6 py-3 font-semibold text-sala hover:bg-pantalla focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pantalla"
+            >
+              <Play aria-hidden className="h-5 w-5 fill-current" />
+              Ver tráiler
+            </button>
             <button
               type="button"
               onClick={() => abrirFicha(pelicula.imdbID)}
-              className="boton-cine inline-flex cursor-pointer items-center gap-2 rounded-full bg-foco px-6 py-3 font-semibold text-sala hover:bg-pantalla focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pantalla"
+              className="boton-cine inline-flex cursor-pointer items-center gap-2 rounded-full bg-pantalla/10 px-6 py-3 font-semibold text-pantalla backdrop-blur hover:bg-pantalla/20 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <Ticket aria-hidden className="h-5 w-5" />
-              Ver ficha completa
+              Ver ficha
             </button>
-            <a
-              href="#buscar"
-              className="boton-cine inline-flex items-center gap-2 rounded-full bg-pantalla/10 px-6 py-3 font-semibold text-pantalla backdrop-blur hover:bg-pantalla/20 focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              <Search aria-hidden className="h-5 w-5" />
-              Buscar otra
-            </a>
+            <FavButton
+              titulo={{ imdbID: pelicula.imdbID, Title: pelicula.Title, Year: pelicula.Year, Type: pelicula.Type, Poster: pelicula.Poster }}
+              className="h-12 w-12"
+            />
           </div>
         </div>
 

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Search } from 'lucide-react'
-import { useAbrirFicha } from './FichaProvider'
-import PosterCard from './PosterCard'
+import TituloCard from './TituloCard'
 import {
   API_KEY,
   OMDB_URL,
@@ -31,8 +30,6 @@ export default function SearchMovies() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
 
-  // Abre la ficha en el modal compartido de la página
-  const abrirFicha = useAbrirFicha()
 
   const minLength = mode === 'nombre' ? 3 : 2
   const isSearching = query.trim().length >= minLength
@@ -122,7 +119,7 @@ export default function SearchMovies() {
   return (
     <>
       {/* Letrero de cine con focos */}
-      <div id="buscar" className="relative scroll-mt-6 rounded-[28px] p-5 shadow-[0_30px_80px_-30px_rgba(245,184,61,0.5)]">
+      <div id="buscar" className="relative scroll-mt-28 rounded-[28px] p-5 shadow-[0_30px_80px_-30px_rgba(245,184,61,0.5)]">
         {/* Fila de focos alrededor del letrero */}
         <div aria-hidden className="focos" />
         <div className="relative rounded-2xl border-2 border-foco/60 bg-butaca px-5 py-8 sm:px-10 sm:py-10">
@@ -249,13 +246,13 @@ export default function SearchMovies() {
                   // Cascada: cada póster entra un poco después del anterior (los de "cargar más" sin retraso extra)
                   style={{ animationDelay: `${(i % 10) * 45}ms` }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => abrirFicha(movie.imdbID)}
-                    className="tarjeta-poster block w-full cursor-pointer text-left focus-visible:outline-none"
-                  >
-                    <PosterCard title={movie.Title} year={movie.Year} type={movie.Type} poster={movie.Poster} />
-                  </button>
+                  <TituloCard
+                    imdbID={movie.imdbID}
+                    title={movie.Title}
+                    year={movie.Year}
+                    type={movie.Type}
+                    poster={movie.Poster}
+                  />
                 </li>
               ))}
             </ul>
