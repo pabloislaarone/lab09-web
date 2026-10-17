@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { connection } from 'next/server'
 import FichaProvider from './_components/FichaProvider'
+import Hero from './_components/Hero'
 import SearchMovies from './_components/SearchMovies'
 import OpenFicha from './_components/OpenFicha'
 import PosterCard from './_components/PosterCard'
@@ -18,6 +19,27 @@ async function cargarCartelera(): Promise<MovieDetail[] | null> {
     console.error('Error al pedir la cartelera a OMDb:', err instanceof Error ? err.message : err)
     return null
   }
+}
+
+// Portada (SSR): los títulos destacados llegan al navegador ya obtenidos
+async function Portada() {
+  const popular = await cargarCartelera()
+
+  if (!popular || popular.length === 0) {
+    return (
+      <section className="flex min-h-[60svh] items-center justify-center px-4">
+        <div className="max-w-lg text-center">
+          <p className="font-marquee text-5xl font-black text-foco">CARTELERA</p>
+          <p className="mt-4 text-pantalla/90">
+            No se pudo cargar la cartelera. Revisa que el archivo <code className="text-foco">.env.local</code> tenga
+            tu apikey de OMDb y reinicia el servidor con <code className="text-foco">npm run dev</code>.
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  return <Hero destacadas={popular.slice(0, 5)} />
 }
 
 // Lista "En cartelera" (SSR): componente de servidor con pósters clicables
@@ -45,6 +67,20 @@ async function ListaCartelera() {
   )
 }
 
+function PortadaCargando() {
+  return (
+    <div className="mx-auto grid min-h-[92svh] w-full max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-[1fr_320px]" aria-label="Cargando cartelera">
+      <div className="space-y-5">
+        <div className="esqueleto h-24 w-3/4 rounded-lg animate-brillo" />
+        <div className="esqueleto h-5 w-1/2 rounded animate-brillo" />
+        <div className="esqueleto h-20 w-full rounded animate-brillo" />
+        <div className="esqueleto h-12 w-56 rounded-full animate-brillo" />
+      </div>
+      <div className="esqueleto hidden aspect-[2/3] rounded-xl animate-brillo md:block" />
+    </div>
+  )
+}
+
 function ListaCargando() {
   return (
     <ul className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6" aria-label="Cargando cartelera">
@@ -62,6 +98,11 @@ export default function CinePage() {
   return (
     <main className="cartelera min-h-screen bg-sala font-texto text-pantalla">
       <FichaProvider>
+        {/* Portada (SSR) */}
+        <Suspense fallback={<PortadaCargando />}>
+          <Portada />
+        </Suspense>
+
         {/* Búsqueda (CSR) */}
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <SearchMovies />
