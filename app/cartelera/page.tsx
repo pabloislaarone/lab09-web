@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { connection } from 'next/server'
 import axios from 'axios'
 import { ArrowLeft, Star } from 'lucide-react'
+import SearchMovies from './_components/SearchMovies'
 import Poster from './_components/Poster'
 import { API_KEY, OMDB_URL, MovieDetail, orDash, typeLabel } from './_lib/omdb'
 
@@ -149,6 +150,9 @@ export default function CarteleraPage() {
             <ArrowLeft aria-hidden className="h-4 w-4" />
             Volver a la portada
           </Link>
+
+          {/* CSR: búsqueda interactiva */}
+          <SearchMovies />
         </div>
       </div>
 
