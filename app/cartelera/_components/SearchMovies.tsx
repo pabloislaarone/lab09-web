@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Search } from 'lucide-react'
+import MovieModal from './MovieModal'
 import Poster from './Poster'
 import {
   API_KEY,
@@ -270,6 +271,8 @@ export default function SearchMovies() {
         )}
       </section>
 
+      {/* Detalle en la misma página, dentro de un modal */}
+      {selectedId && <MovieModal imdbID={selectedId} onClose={() => setSelectedId(null)} />}
     </>
   )
 }
